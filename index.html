@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#101715">
+    <title>APEX RUSH | Simulateur de pilotage commercial</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <main id="city-simulator" class="city-simulator">
+        <canvas id="city-canvas" aria-label="Ville commerciale en 3D"></canvas>
+        <div class="city-vignette" aria-hidden="true"></div>
+
+        <header class="city-topbar">
+            <div class="city-brand"><span class="brand-mark-small">A</span><strong>APEX <b>RUSH</b></strong><span>SIMULATEUR COMMERCIAL</span></div>
+            <div class="story-objective"><span>MISSION</span><strong id="story-objective">Lancer votre première campagne et développer le pipeline.</strong></div>
+            <div class="topbar-actions">
+                <span class="period-chip" id="period-label">ANNÉE 1 · PÉRIODE 1</span>
+                <button id="debrief-open" class="utility-button" type="button">DÉBRIEF</button>
+                <button id="pause-open" class="square-button" type="button" aria-label="Pause">Ⅱ</button>
+            </div>
+        </header>
+
+        <aside id="city-kpis" class="city-kpis is-hidden" aria-label="Tableau de bord permanent">
+            <div class="city-kpi city-kpi--revenue">
+                <div class="city-kpi-heading"><span>CHIFFRE D'AFFAIRES</span><strong id="hud-revenue">50 000 €</strong></div>
+                <div class="city-kpi-meta"><span>Objectif annuel</span><strong id="hud-revenue-goal">120 000 €</strong></div>
+                <div class="meter"><span id="hud-revenue-meter"></span></div>
+            </div>
+            <div class="city-kpi"><div class="city-kpi-heading"><span>MARGE MOYENNE</span><strong id="hud-margin">32 %</strong></div><div class="meter meter--orange"><span id="hud-margin-meter"></span></div></div>
+            <div class="city-kpi"><div class="city-kpi-heading"><span>MOTIVATION</span><strong id="hud-motivation">78 %</strong></div><div class="meter meter--cyan"><span id="hud-motivation-meter"></span></div></div>
+            <div class="city-kpi"><div class="city-kpi-heading"><span>NPS CLIENT</span><strong id="hud-nps">+45</strong></div><div class="meter meter--gold"><span id="hud-nps-meter"></span></div></div>
+            <div class="city-team-line"><span>ÉQUIPE</span><strong id="hud-team">2 personnes</strong><span>TRÉSORERIE</span><strong id="hud-cash">35 000 €</strong></div>
+        </aside>
+
+        <div id="interaction-prompt" class="interaction-prompt is-hidden" role="status"><kbd>E</kbd><span id="interaction-label">Entrer</span></div>
+        <div id="toast" class="city-toast" role="status" aria-live="polite"></div>
+        <div class="city-controls" aria-hidden="true"><span>SE DÉPLACER <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> / <kbd>ZQSD</kbd></span><span>INTERAGIR <kbd>E</kbd></span><span>VÉHICULE <kbd>E / ESPACE</kbd></span></div>
+
+        <section id="start-screen" class="city-start-screen" aria-labelledby="start-title">
+            <div class="start-content">
+                <p class="eyebrow"><span></span> MODE HISTOIRE · ACTE 01</p>
+                <h1 id="start-title">La ville<br><span>vous appartient.</span></h1>
+                <p>Deux personnes, 50 000 € de chiffre d'affaires et un territoire à conquérir. Chaque choix façonne votre équipe et votre croissance.</p>
+                <div class="start-stats"><span>ÉQUIPE <strong>2</strong></span><span>CA INITIAL <strong>50 000 €</strong></span><span>OBJECTIF <strong>120 000 €</strong></span></div>
+                <button id="start-story" class="primary-action" type="button"><span>COMMENCER LE MODE HISTOIRE</span><b aria-hidden="true">→</b></button>
+            </div>
+            <div class="start-signature"><span>APEX MOTOR CLUB</span><span>SAISON 01 / CROISSANCE</span></div>
+        </section>
+
+        <div id="panel-backdrop" class="panel-backdrop is-hidden"></div>
+
+        <section id="hq-panel" class="business-panel is-hidden" aria-labelledby="hq-title">
+            <header class="panel-header"><div><p class="panel-eyebrow">SIÈGE SOCIAL · PILOTAGE</p><h2 id="hq-title">Dashboard commercial</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <div class="dashboard-summary">
+                <div><span>TRÉSORERIE</span><strong id="hq-cash">35 000 €</strong></div>
+                <div><span>PIPELINE</span><strong id="hq-pipeline">8 leads</strong></div>
+                <div><span>CAPACITÉ / PÉRIODE</span><strong id="hq-capacity">18 leads</strong></div>
+                <div><span>PERDUS</span><strong id="hq-lost">0</strong></div>
+            </div>
+            <div class="funnel-layout">
+                <nav class="funnel-nav" aria-label="Phases du funnel">
+                    <button class="funnel-tab is-active" type="button" data-phase="awareness"><span>01</span><strong>Notoriété</strong><small>Faire connaître</small></button>
+                    <button class="funnel-tab" type="button" data-phase="interest"><span>02</span><strong>Intérêt</strong><small>Générer des leads</small></button>
+                    <button class="funnel-tab" type="button" data-phase="consideration"><span>03</span><strong>Considération</strong><small>Qualifier</small></button>
+                    <button class="funnel-tab" type="button" data-phase="decision"><span>04</span><strong>Décision</strong><small>Signer</small></button>
+                    <button class="funnel-tab" type="button" data-phase="loyalty"><span>05</span><strong>Fidélisation</strong><small>Développer le compte</small></button>
+                </nav>
+                <article class="phase-detail">
+                    <p id="phase-kicker" class="panel-eyebrow">PHASE 01 · ACQUISITION</p>
+                    <h3 id="phase-title">Notoriété</h3>
+                    <p id="phase-objective" class="phase-objective">Faire connaître l'offre aux bons comptes.</p>
+                    <div class="phase-info-grid"><div><span>ACTIVITÉS CLÉS</span><p id="phase-activities"></p></div><div><span>KPIs À SUIVRE</span><p id="phase-kpis"></p></div></div>
+                    <div class="phase-gate"><div><span>OBJECTIF DE L'ÉTAPE</span><strong id="phase-target">Atteindre 2 000 visiteurs</strong></div><p id="phase-validation-status">À valider avant de débloquer la phase suivante.</p></div>
+                    <div class="resource-allocation">
+                        <label for="marketing-allocation">Budget marketing par période <strong><span id="marketing-allocation-value">5 000</span> €</strong></label>
+                        <input id="marketing-allocation" type="range" min="1000" max="15000" step="1000" value="5000">
+                        <label for="coaching-allocation">Temps de coaching <strong><span id="coaching-allocation-value">2</span> jours</strong></label>
+                        <input id="coaching-allocation" type="range" min="0" max="8" step="1" value="2">
+                    </div>
+                    <div class="phase-actions"><button id="phase-action" class="primary-action" type="button">LANCER L'ACTION</button><button id="validate-phase" class="secondary-action" type="button">VALIDER L'ÉTAPE</button></div>
+                    <div class="team-preview"><div><span>ÉQUIPE COMMERCIALE</span><button id="staffing-shortcut" type="button">Gérer l'équipe →</button></div><div id="hq-team-list" class="staff-list"></div></div>
+                </article>
+            </div>
+        </section>
+
+        <section id="recruitment-panel" class="business-panel is-hidden" aria-labelledby="recruitment-title">
+            <header class="panel-header"><div><p class="panel-eyebrow">AGENCE · TALENTS COMMERCIAUX</p><h2 id="recruitment-title">Renforcer l'équipe</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <p class="panel-intro">Chaque recrutement augmente la capacité du funnel, mais aussi les charges fixes. Choisissez le profil adapté au goulot du moment.</p>
+            <div class="recruitment-alert is-hidden" id="recruitment-alert"><strong>MISSION HISTOIRE</strong><span>Le pipeline dépasse la capacité de vos deux salariés. Recrutez à l'agence pour éviter de perdre vos leads.</span></div>
+            <div class="recruitment-list">
+                <article class="hire-card"><span class="role-mark role-mark--sdr">S</span><div><h3>SDR · Développement commercial</h3><p>+12 leads qualifiés traités / période · Charge : 5 500 € / période</p></div><button type="button" class="hire-button" data-hire="SDR">RECRUTER · 8 000 €</button></article>
+                <article class="hire-card"><span class="role-mark role-mark--ae">A</span><div><h3>Account Executive · Closing</h3><p>+6 rendez-vous et capacité de signature · Charge : 7 000 € / période</p></div><button type="button" class="hire-button" data-hire="AE">RECRUTER · 10 000 €</button></article>
+                <article class="hire-card"><span class="role-mark role-mark--cs">C</span><div><h3>Customer Success · Fidélisation</h3><p>+10 comptes suivis · Réduit le churn et protège le NPS · Charge : 5 000 € / période</p></div><button type="button" class="hire-button" data-hire="CS">RECRUTER · 7 000 €</button></article>
+                <article class="hire-card hire-card--temp"><span class="role-mark role-mark--temp">I</span><div><h3>Renfort intérimaire · Mission courte</h3><p>+8 leads traités pendant 2 périodes · Pas de charge fixe</p></div><button type="button" class="hire-button" data-hire="TEMP">MISSION · 4 000 €</button></article>
+            </div>
+            <div class="team-preview"><div><span>ÉQUIPE ACTUELLE</span><strong id="recruitment-headcount">2 personnes</strong></div><div id="recruitment-team-list" class="staff-list"></div></div>
+        </section>
+
+        <section id="bank-panel" class="business-panel compact-panel is-hidden" aria-labelledby="bank-title">
+            <header class="panel-header"><div><p class="panel-eyebrow">BANQUE · FINANCEMENT</p><h2 id="bank-title">Financer la croissance</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <div class="finance-readout"><span>TRÉSORERIE DISPONIBLE</span><strong id="bank-cash">35 000 €</strong><span>DETTE EN COURS</span><strong id="bank-debt">0 €</strong></div>
+            <p class="panel-intro">Une ligne de crédit soutient l'acquisition ou le recrutement, mais réduit la marge future via son coût financier.</p>
+            <div class="loan-options"><button class="loan-button" type="button" data-loan="25000"><strong>25 000 €</strong><span>Frais : 1 500 €</span></button><button class="loan-button" type="button" data-loan="50000"><strong>50 000 €</strong><span>Frais : 3 500 €</span></button></div>
+        </section>
+
+        <section id="marketing-panel" class="business-panel compact-panel is-hidden" aria-labelledby="marketing-title">
+            <header class="panel-header"><div><p class="panel-eyebrow">AGENCE · ACQUISITION</p><h2 id="marketing-title">Campagnes commerciales</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <p class="panel-intro">Choisissez un canal et arbitrez entre volume, coût par lead et adéquation avec la cible.</p>
+            <div class="campaign-list"><button class="campaign-button" type="button" data-campaign="reach"><strong>Campagne de notoriété</strong><span>+500 visiteurs · budget 8 000 €</span></button><button class="campaign-button" type="button" data-campaign="targeted"><strong>Acquisition ciblée</strong><span>+220 visiteurs · +14 leads · budget 9 000 €</span></button><button class="campaign-button" type="button" data-campaign="webinar"><strong>Webinaire expert</strong><span>+8 leads qualifiés · budget 6 000 €</span></button></div>
+        </section>
+
+        <section id="service-panel" class="business-panel compact-panel is-hidden" aria-labelledby="service-title">
+            <header class="panel-header"><div><p class="panel-eyebrow">CENTRE SERVICE CLIENT · FIDÉLISATION</p><h2 id="service-title">Protéger la valeur client</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <div class="finance-readout"><span>RÉTENTION</span><strong id="service-retention">88 %</strong><span>CHURN</span><strong id="service-churn">4 %</strong><span>NPS</span><strong id="service-nps">+45</strong></div>
+            <p class="panel-intro">Un churn élevé détruit la valeur cumulée de l’acquisition et fait remonter le coût d’acquisition moyen.</p>
+            <div class="campaign-list"><button class="campaign-button" type="button" data-service-action="followup"><strong>Bilan de santé du compte</strong><span>Améliore l’adoption, la rétention et la CLV.</span></button><button class="campaign-button" type="button" data-service-action="complaint"><strong>Résoudre une réclamation prioritaire</strong><span>Améliore le NPS, avec un coût direct sur la marge.</span></button></div>
+        </section>
+
+        <section id="event-panel" class="business-panel event-panel is-hidden" aria-labelledby="event-title">
+            <header class="panel-header"><div><p class="panel-eyebrow" id="event-type">ALÉA COMMERCIAL</p><h2 id="event-title">Événement stratégique</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <p id="event-context" class="panel-intro"></p>
+            <div id="event-choices" class="event-choices"></div>
+            <div id="event-feedback" class="event-feedback is-hidden" role="status"></div>
+        </section>
+
+        <section id="debrief-panel" class="business-panel debrief-panel is-hidden" aria-labelledby="debrief-title">
+            <header class="panel-header"><div><p class="panel-eyebrow">MODE HISTOIRE · BILAN DE PILOTAGE</p><h2 id="debrief-title">Débrief commercial</h2></div><button class="close-panel" type="button" data-close aria-label="Fermer">×</button></header>
+            <p id="manager-profile" class="manager-profile"></p>
+            <div id="debrief-kpis" class="debrief-kpis"></div>
+            <div class="debrief-section"><h3>Funnel commercial</h3><div id="funnel-summary" class="funnel-summary"></div></div>
+            <div class="debrief-section"><h3>Journal de décisions</h3><div id="decision-log" class="decision-log"></div></div>
+        </section>
+
+        <section id="pause-panel" class="business-panel pause-panel is-hidden" aria-labelledby="pause-title">
+            <p class="panel-eyebrow">TERRITOIRE EN PAUSE</p><h2 id="pause-title">À vous de jouer.</h2>
+            <button id="resume-game" class="primary-action" type="button">REPRENDRE</button>
+        </section>
+
+        <div id="desktop-warning" class="desktop-warning" role="status"><span>APEX RUSH</span><strong>Ce simulateur de ville se joue sur grand écran.</strong><small>Ouvrez-le sur un ordinateur pour explorer et piloter votre équipe.</small></div>
+    </main>
+
+</body>
+</html>
